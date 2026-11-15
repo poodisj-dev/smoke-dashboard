@@ -23,7 +23,7 @@
     </header>
 
     <section class="device-overview" aria-label="ข้อมูลเครื่อง">
-      <div><p class="eyebrow">อุปกรณ์ที่กำลังติดตาม <span class="demo-badge">ข้อมูลตัวอย่าง</span></p><h2 id="device-name">กำลังโหลด...</h2><p id="device-details">—</p></div>
+      <div><h2 id="device-name">กำลังโหลด...</h2></div>
       <div class="device-id"><span>DEVICE ID</span><strong id="device-id">—</strong><small id="last-seen">รอข้อมูลล่าสุด</small></div>
     </section>
 
@@ -40,7 +40,7 @@
     <section class="panel chart-panel">
       <div class="panel-heading"><div><p class="eyebrow">แนวโน้มแบบเรียลไทม์</p><h2>กราฟค่าควัน</h2></div><div class="time-ranges" id="time-ranges"><button data-hours="0.083">ปัจจุบัน</button><button data-hours="1">1 ชม.</button><button data-hours="6">6 ชม.</button><button data-hours="12">12 ชม.</button><button data-hours="24" class="active">24 ชม.</button><button data-hours="168">7 วัน</button></div></div>
       <div class="chart-wrap"><canvas id="smoke-chart"></canvas></div>
-      <div class="threshold-key"><span><i class="normal"></i>ปกติ &lt; 50</span><span><i class="warning"></i>เฝ้าระวัง 50–74</span><span><i class="danger"></i>อันตราย ≥ 75</span></div>
+      <div class="threshold-key"><span><i class="normal"></i>ปกติ &lt; 800</span><span><i class="warning"></i>เฝ้าระวัง 800–1,499</span><span><i class="danger"></i>ควันสูง ≥ 1,500</span></div>
     </section>
 
     <section class="equipment-section"><div class="section-title"><p class="eyebrow">การทำงานของระบบ</p><h2>สถานะอุปกรณ์</h2></div><div class="equipment-grid">

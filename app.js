@@ -2,6 +2,8 @@
 const API = `${window.SMOKEWATCH_API_BASE || ''}/api/v1`;
 // ต้องตรงกับ DEVICE_ID ใน esp32/wildfire_monitor_http/wildfire_monitor_http.ino
 const DEVICE_ID = 'WILDFIRE-ESP32-01';
+// Threshold ของค่า Analog ดิบจาก MQ-2 (ต้องคาลิเบรตใหม่ตามการติดตั้งจริง)
+const SMOKE_THRESHOLDS = { warning: 800, danger: 1500 };
 const state = { hours: 24, page: 1, totalPages: 1, chart: null };
 const labels = { on: 'เปิด', off: 'ปิด', auto: 'อัตโนมัติ', abnormal: 'ผิดปกติ', connected: 'เชื่อมต่ออยู่', disconnected: 'ขาดการเชื่อมต่อ' };
 const $ = id => document.getElementById(id);
@@ -10,7 +12,11 @@ const thaiDate = value => new Intl.DateTimeFormat('th-TH', { day:'2-digit', mont
 const thaiTime = value => new Intl.DateTimeFormat('th-TH', { hour:'2-digit', minute:'2-digit', second:'2-digit' }).format(new Date(value));
 const statusText = value => labels[value] || value || '—';
 
-function smokeLevel(value) { return value >= 75 ? ['อันตราย', 'danger'] : value >= 50 ? ['เฝ้าระวัง', 'warning'] : ['ปกติ', 'normal']; }
+function smokeLevel(value) {
+  return value >= SMOKE_THRESHOLDS.danger ? ['ควันสูง', 'danger']
+    : value >= SMOKE_THRESHOLDS.warning ? ['เฝ้าระวัง', 'warning']
+      : ['ปกติ', 'normal'];
+}
 function updateClock() { $('clock').textContent = new Intl.DateTimeFormat('th-TH', { hour:'2-digit', minute:'2-digit', second:'2-digit' }).format(new Date()); }
 function updateConnection(latest) {
   const connected = latest?.connection_status === 'connected';
@@ -49,12 +55,18 @@ function drawChart(history) {
 async function loadDashboard() {
   const response = await fetch(`${API}/dashboard?device_id=${encodeURIComponent(DEVICE_ID)}&hours=${state.hours}`); if (!response.ok) throw new Error('ไม่สามารถโหลด Dashboard ได้');
   const data = await response.json(); const { device, latest, summary, history } = data;
-  $('device-name').textContent = device.name; $('device-details').textContent = `${device.organization} • ${device.location}`; $('device-id').textContent = device.id;
+  $('device-name').textContent = device.name; $('device-id').textContent = device.id;
   $('last-seen').textContent = latest ? `ข้อมูลล่าสุด ${thaiDate(latest.timestamp)} เวลา ${thaiTime(latest.timestamp)} น.` : 'ยังไม่มีข้อมูล';
   $('current-value').textContent = number(latest?.smoke_value); $('max-value').textContent = number(summary.max); $('min-value').textContent = number(summary.min); $('average-value').textContent = number(summary.average);
   const [level] = smokeLevel(latest?.smoke_value ?? 0); $('smoke-level').textContent = level; updateConnection(latest); updateEquipment('pump', latest?.pump_status, latest?.timestamp); updateEquipment('alarm', latest?.alarm_status, latest?.timestamp);
   updateEnvironmentalSensors(latest);
-  const danger = latest && latest.smoke_value >= 75; $('alert').classList.toggle('hidden', !danger); if (danger) { $('alert-title').textContent = 'ตรวจพบค่าควันสูง'; $('alert-message').textContent = `${latest.alarm_status !== 'off' ? 'สัญญาณเตือนภัยกำลังทำงาน' : 'ระบบกำลังตรวจสอบสถานการณ์'}${latest.pump_status !== 'off' ? ' • ปั๊มน้ำกำลังทำงาน' : ''}`; }
+  const showSmokeAlert = latest && latest.smoke_value >= SMOKE_THRESHOLDS.warning;
+  $('alert').classList.toggle('hidden', !showSmokeAlert);
+  if (showSmokeAlert) {
+    const isDangerous = latest.smoke_value >= SMOKE_THRESHOLDS.danger;
+    $('alert-title').textContent = isDangerous ? 'ตรวจพบควันในระดับสูง' : 'ค่าควันอยู่ในระดับเฝ้าระวัง';
+    $('alert-message').textContent = `ค่าควันปัจจุบัน ${number(latest.smoke_value)} หน่วย${latest.alarm_status !== 'off' ? ' • ระบบแจ้งเตือนกำลังทำงาน' : ''}`;
+  }
   drawChart(history);
 }
 async function loadTable() {
