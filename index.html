@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmokeWatch | IoT Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">S</div><div><p>SMOKEWATCH <span>• DEMO</span></p><h1>ศูนย์ติดตามคุณภาพอากาศ</h1></div></div>
+      <div class="header-meta">
+        <div class="clock"><span>เวลาปัจจุบัน</span><strong id="clock">--:--:--</strong></div>
+        <div class="connection-pill" id="connection-pill"><i></i><span id="connection-label">กำลังตรวจสอบ</span></div>
+      </div>
+    </header>
+
+    <section class="device-overview" aria-label="ข้อมูลเครื่อง">
+      <div><p class="eyebrow">อุปกรณ์ที่กำลังติดตาม <span class="demo-badge">ข้อมูลตัวอย่าง</span></p><h2 id="device-name">กำลังโหลด...</h2><p id="device-details">—</p></div>
+      <div class="device-id"><span>DEVICE ID</span><strong id="device-id">—</strong><small id="last-seen">รอข้อมูลล่าสุด</small></div>
+    </section>
+
+    <section class="alert hidden" id="alert" role="alert"><span>!</span><div><strong id="alert-title">ตรวจพบค่าควันสูง</strong><p id="alert-message">ระบบกำลังตรวจสอบสถานการณ์</p></div></section>
+
+    <section class="summary-grid" aria-label="สรุปค่าควัน">
+      <article class="metric primary"><div class="metric-icon">≋</div><p>ค่าควันปัจจุบัน</p><h3><span id="current-value">—</span><small>หน่วย</small></h3><span id="smoke-level" class="level-chip">—</span></article>
+      <article class="metric"><p>ค่าสูงสุดในช่วง</p><h3><span id="max-value">—</span><small>หน่วย</small></h3><small class="muted">ตามช่วงเวลาที่เลือก</small></article>
+      <article class="metric"><p>ค่าต่ำสุดในช่วง</p><h3><span id="min-value">—</span><small>หน่วย</small></h3><small class="muted">ตามช่วงเวลาที่เลือก</small></article>
+      <article class="metric"><p>ค่าเฉลี่ย</p><h3><span id="average-value">—</span><small>หน่วย</small></h3><small class="muted">ตามช่วงเวลาที่เลือก</small></article>
+      <article class="metric system-state"><p>สถานะเครื่อง</p><h3 id="system-status">—</h3><small class="muted" id="system-status-detail">กำลังตรวจสอบ</small></article>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="panel-heading"><div><p class="eyebrow">แนวโน้มแบบเรียลไทม์</p><h2>กราฟค่าควัน</h2></div><div class="time-ranges" id="time-ranges"><button data-hours="0.083">ปัจจุบัน</button><button data-hours="1">1 ชม.</button><button data-hours="6">6 ชม.</button><button data-hours="12">12 ชม.</button><button data-hours="24" class="active">24 ชม.</button><button data-hours="168">7 วัน</button></div></div>
+      <div class="chart-wrap"><canvas id="smoke-chart"></canvas></div>
+      <div class="threshold-key"><span><i class="normal"></i>ปกติ &lt; 50</span><span><i class="warning"></i>เฝ้าระวัง 50–74</span><span><i class="danger"></i>อันตราย ≥ 75</span></div>
+    </section>
+
+    <section class="equipment-section"><div class="section-title"><p class="eyebrow">การทำงานของระบบ</p><h2>สถานะอุปกรณ์</h2></div><div class="equipment-grid">
+      <article class="equipment-card"><div class="equipment-symbol water">♒</div><div><p>ปั๊มน้ำ</p><h3 id="pump-status">—</h3><small id="pump-updated">รอข้อมูล</small></div><span class="status-dot" id="pump-dot"></span></article>
+      <article class="equipment-card"><div class="equipment-symbol alarm">⌁</div><div><p>สัญญาณเตือนภัย</p><h3 id="alarm-status">—</h3><small id="alarm-updated">รอข้อมูล</small></div><span class="status-dot" id="alarm-dot"></span></article>
+      <article class="equipment-card future"><div class="equipment-symbol">＋</div><div><p>อุปกรณ์เพิ่มเติม</p><h3>พร้อมเพิ่ม</h3><small>รองรับในอนาคต</small></div></article>
+    </div></section>
+
+    <section class="equipment-section"><div class="section-title"><p class="eyebrow">ข้อมูลจากเซนเซอร์</p><h2>สภาพแวดล้อมและเปลวไฟ</h2></div><div class="equipment-grid">
+      <article class="equipment-card"><div class="equipment-symbol">°</div><div><p>อุณหภูมิ</p><h3><span id="temperature-value">—</span> °C</h3><small>จาก DHT22</small></div></article>
+      <article class="equipment-card"><div class="equipment-symbol water">♧</div><div><p>ความชื้น</p><h3><span id="humidity-value">—</span> %</h3><small>จาก DHT22</small></div></article>
+      <article class="equipment-card"><div class="equipment-symbol alarm">⌁</div><div><p>Flame Sensor</p><h3 id="flame-status">—</h3><small id="flame-detail">รอข้อมูล</small></div><span class="status-dot off" id="flame-dot"></span></article>
+    </div></section>
+
+    <section class="panel data-panel"><div class="panel-heading"><div><p class="eyebrow">บันทึกจากเซนเซอร์</p><h2>ข้อมูลย้อนหลัง</h2></div><span class="row-count" id="row-count">— รายการ</span></div>
+      <div class="table-scroll"><table><thead><tr><th>วันที่</th><th>เวลา</th><th>ค่าควัน</th><th>สถานะระบบ</th><th>สถานะอุปกรณ์</th></tr></thead><tbody id="readings-body"><tr><td colspan="5" class="loading">กำลังโหลดข้อมูล...</td></tr></tbody></table></div>
+      <footer class="table-footer"><span id="page-info">—</span><div><button class="pager" id="previous-page">← ก่อนหน้า</button><button class="pager" id="next-page">ถัดไป →</button></div></footer>
+    </section>
+  </main>
+</body>
+</html>
